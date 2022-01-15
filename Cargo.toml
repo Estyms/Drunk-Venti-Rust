@@ -1,0 +1,25 @@
+[package]
+name = "drunk-venti-rust"
+version = "1.0.0"
+edition = "2021"
+authors = ["Evann Regnault"]
+license = "MIT"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serenity = { version = "0.10.9", default-features = false, features = ["client", "gateway", "rustls_backend", "model", "unstable_discord_api", "collector"] }
+tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
+reqwest = "0.11.7"
+serde_derive = "1.0.132"
+serde = "1.0.132"
+serde_json = {version = "1.0.73", features = ["indexmap"]}
+levenshtein = "1.0.5"
+regex = "1.5.4"
+linked-hash-map = "0.5.4"
+getset = "0.1.2"
+mongodb = "2.1.0"
+futures = "0.3.19"
+rand = "0.8.4"
+dotenv = "0.15.0"
+dotenv_codegen = "0.15.0"
