@@ -53,6 +53,20 @@ pub async fn update_status_message(ctx: Context) {
 
 #[allow(dead_code)]
 pub async fn create_status_interaction(ctx: Context, command: ApplicationCommandInteraction) {
+    let altcommand = command.clone();
+    if !altcommand.member.unwrap().permissions.expect("No permissions").manage_messages() {
+        command.create_interaction_response(&ctx.http, |f| {
+            f.kind(InteractionResponseType::ChannelMessageWithSource).interaction_response_data(|r| {
+                r.create_embed(|e| {
+                    e.title("Command Unsuccessful").description("You do not have the right to manage messages.")
+                        .color(Colour::from(0xff0000))
+                }).flags(InteractionApplicationCommandCallbackDataFlags::EPHEMERAL)
+            })
+        }).await;
+        return;
+    }
+
+
     let embeds = create_status_embed().await;
     let channel_option = &command.data.resolved.channels;
     let channel_id = channel_option.keys().next().expect("No options passed");
