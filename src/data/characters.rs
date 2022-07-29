@@ -1,4 +1,4 @@
-use std::fs;
+use std::{env, fs};
 use reqwest::Url;
 use serde_derive::{Serialize, Deserialize};
 use crate::data::builds::{Role};
@@ -71,6 +71,7 @@ impl Character {
 
 #[test]
 fn test_character() {
+    println!(env::current_dir());
     let data = fs::read_to_string("test/character.json").expect("No character test file");
     serde_json::from_str::<Character>(&data).expect("Didn't work");
 }
