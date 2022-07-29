@@ -1,0 +1,17 @@
+image: alpine/edge
+secrets:
+  - 63803e26-ce03-455a-bffa-febe1f7ed57d
+  - ba3c7daf-1c29-4099-aa0f-2d62633e648e
+packages:
+  - rust
+  - cargo
+  - openssl-dev
+sources:
+  - https://git.sr.ht/~estym/Drunk-Venti-Rust
+tasks:
+  - build: |
+      cd Drunk-Venti-Rust
+      cargo run build
+  - test: |
+      cd Drunk-Venti-Rust
+      cargo test
