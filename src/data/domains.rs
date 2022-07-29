@@ -1,3 +1,4 @@
+use std::fs;
 use reqwest::Url;
 use serde_derive::{Serialize, Deserialize};
 
@@ -60,11 +61,8 @@ impl Domain {
 }
 
 
-#[allow(dead_code)]
-pub async fn test_domains () {
-    for a in Domain::get_all().await {
-        println!("{}", a);
-        let domain = Domain::get(&a).await;
-        println!("Name : {}", domain.name);
-    }
+#[test]
+fn test_items() {
+    let data = fs::read_to_string("test/domain.json").expect("No Domain test file");
+    serde_json::from_str::<Domain>(&data).expect("Didn't work");
 }

@@ -1,3 +1,4 @@
+use std::fs;
 use reqwest::Url;
 use serde_derive::{Serialize, Deserialize};
 use serenity::builder::CreateEmbed;
@@ -25,12 +26,14 @@ pub struct Artifact {
 }
 
 impl Artifact{
+    #[allow(dead_code)]
     pub async fn get(artifact: &str) -> Artifact {
         let url = format!("http://localhost:3000/api/artifacts/{}", artifact);
         let url = Url::parse(&*url).expect("Can't convert url");
         return reqwest::get(url).await.expect("Can't access Url").json::<Artifact>().await.expect("Wrong json format");
     }
 
+    #[allow(dead_code)]
     async fn get_all() -> Vec<Box<str>> {
         let url = format!("http://localhost:3000/api/artifacts");
         let url = Url::parse(&*url).expect("Can't convert url");
@@ -81,11 +84,8 @@ impl Artifact{
     }
 }
 
-pub async fn test_artifacts() {
-    for a in Artifact::get_all().await {
-        println!("{}", a);
-        let arti = Artifact::get(&a).await;
-        println!("Name : {}\nCirclet : {}\nBonuses {:?}", arti.name, arti.sets.goblet.unwrap_or(Box::from("")), arti.bonuses);
-    }
-
+#[test]
+fn test_artifact() {
+    let data = fs::read_to_string("test/artifact.json").expect("No Artifact test file");
+    serde_json::from_str::<Artifact>(&data).expect("Didn't work");
 }

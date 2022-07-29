@@ -1,3 +1,4 @@
+use std::fs;
 use reqwest::Url;
 use serde_derive::{Serialize, Deserialize};
 
@@ -9,8 +10,8 @@ pub struct Event {
     pub start: Box<str>,
     pub end: Box<str>,
     pub url: Option<Box<str>>,
-    pub start_timestamp: u64,
-    pub end_timestamp: u64,
+    pub start_timestamp: Option<u64>,
+    pub end_timestamp: Option<u64>,
     pub show_on_home: Option<bool>
 }
 
@@ -46,17 +47,8 @@ impl Event {
     }
 }
 
-#[allow(dead_code)]
-pub async fn test_events() {
-    let upcoming = Event::get_upcoming().await;
-    println!("UPCOMING EVENTS\n--------");
-    for event in upcoming {
-        println!("Name : {}", event.name);
-    }
-
-    let current = Event::get_current().await;
-    println!("CURRENT EVENTS\n--------");
-    for event in current {
-        println!("Name : {}", event.name);
-    }
+#[test]
+fn test_events() {
+    let data = fs::read_to_string("test/events.json").expect("No events test file");
+    serde_json::from_str::<Vec<Event>>(&data).expect("Didn't work");
 }

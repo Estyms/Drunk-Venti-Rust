@@ -221,9 +221,9 @@ pub async fn home_embed(role: &Role, character: Character) -> CreateEmbed {
         _ => { embed.field("Best Artifacts", "TBD", false); }
     }
 
-    embed.field("Circlet", &role.main_stats.circlet, true);
-    embed.field("Goblet", &role.main_stats.goblet, true);
-    embed.field("Sands", &role.main_stats.sands, true);
+    embed.field("Circlet", &role.main_stats.circlet[0], true);
+    embed.field("Goblet", &role.main_stats.goblet[0], true);
+    embed.field("Sands", &role.main_stats.sands[0], true);
 
     embed.footer(|f| {
         f.text(format!("Data from : https://paimon.moe/characters/{}", character.id))
@@ -301,9 +301,9 @@ async fn artifact_embed(role: &Role, character: Character) -> CreateEmbed {
         format!("- {}", role.sub_stats.join("\n-"))
     }, false);
 
-    embed.field("Circlet", &role.main_stats.circlet, true);
-    embed.field("Goblet", &role.main_stats.goblet, true);
-    embed.field("Sands", &role.main_stats.sands, true);
+    embed.field("Circlet", &role.main_stats.circlet[0], true);
+    embed.field("Goblet", &role.main_stats.goblet[0], true);
+    embed.field("Sands", &role.main_stats.sands[0], true);
 
     embed.footer(|f| {
         f.text(format!("Data from : https://paimon.moe/characters/{}", character.id))

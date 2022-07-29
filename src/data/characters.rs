@@ -1,3 +1,4 @@
+use std::fs;
 use reqwest::Url;
 use serde_derive::{Serialize, Deserialize};
 use crate::data::builds::{Role};
@@ -24,13 +25,13 @@ pub struct CharacterMaterials {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Character {
-    pub name: Box<str>,
     pub id: Box<str>,
+    pub name: Box<str>,
     pub rarity: u8,
-    pub element: Element,
     pub weapon: WeaponType,
-    pub ascension: Vec<Ascension>,
     pub stats: CharacterStats,
+    pub ascension: Vec<Ascension>,
+    pub element: Element,
     pub material: CharacterMaterials,
     pub builds: Vec<Role>
 }
@@ -48,6 +49,8 @@ impl Character {
     pub(crate) async fn get(character: &str) -> Character {
         let url = format!("http://localhost:3000/api/characters/{}", character);
         let url = Url::parse(&*url).expect("Can't convert url");
+        let a  = reqwest::get(url.clone()).await.expect("Can't access Url");
+        println!("{}",&a.text().await.expect(""));
         return reqwest::get(url).await.expect("Can't access Url").json::<Character>().await.expect("Wrong json format");
     }
 
@@ -66,11 +69,8 @@ impl Character {
     }
 }
 
-#[allow(dead_code)]
-pub async fn test_character () {
-    for a in Character::get_all().await {
-        println!("{}", a);
-        let char = Character::get(&a).await;
-        println!("Name : {}", char.name);
-    }
+#[test]
+fn test_character() {
+    let data = fs::read_to_string("test/character.json").expect("No character test file");
+    serde_json::from_str::<Character>(&data).expect("Didn't work");
 }

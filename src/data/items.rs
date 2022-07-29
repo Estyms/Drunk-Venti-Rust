@@ -1,3 +1,4 @@
+use std::fs;
 use reqwest::Url;
 use serde_derive::{Serialize, Deserialize};
 
@@ -12,12 +13,13 @@ pub struct Item {
 }
 
 impl Item{
+    #[allow(dead_code)]
     async fn get(item: &str) -> Item {
         let url = format!("http://localhost:3000/api/items/{}", item);
         let url = Url::parse(&*url).expect("Can't convert url");
         return reqwest::get(url).await.expect("Can't access Url").json::<Item>().await.expect("Wrong json format");
     }
-
+    #[allow(dead_code)]
     async fn get_all() -> Vec<Box<str>> {
         let url = format!("http://localhost:3000/api/items");
         let url = Url::parse(&*url).expect("Can't convert url");
@@ -32,12 +34,8 @@ impl Item{
     }
 }
 
-pub async fn test_items() {
-    println!("List all items : {:?}", Item::get_all().await);
-
-    let item = Item::get("relic_from_guyun").await;
-    println!("Name : {}\nDays : {:?}", item.name, item.day.unwrap_or(vec![]));
-
-    let item = Item::get("mora").await;
-    println!("Name : {}\nDays : {:?}", item.name, item.day.unwrap_or(vec![]));
+#[test]
+fn test_item() {
+    let data = fs::read_to_string("test/item.json").expect("No item test file");
+    serde_json::from_str::<Item>(&data).expect("Didn't work");
 }

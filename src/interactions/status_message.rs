@@ -62,7 +62,7 @@ pub async fn create_status_interaction(ctx: Context, command: ApplicationCommand
                         .color(Colour::from(0xff0000))
                 }).flags(InteractionApplicationCommandCallbackDataFlags::EPHEMERAL)
             })
-        }).await;
+        }).await.expect("Interaction didn't work");
         return;
     }
 
@@ -148,7 +148,7 @@ async fn create_status_embed() -> Vec<CreateEmbed> {
             _ => {}
         };
 
-        embed.description(format!("Ends : <t:{}:R>", e.end_timestamp));
+        embed.description(format!("Ends : <t:{}:R>", e.end_timestamp.expect("No End Timestamp")));
         embeds.push(embed);
     }
 
@@ -159,7 +159,7 @@ async fn create_status_embed() -> Vec<CreateEmbed> {
     other_embed.color(Colour::new(rand::thread_rng().gen_range(0x000000..0xffffff)));
 
     for e in others {
-        other_embed.field(e.name, format!("Ends : <t:{}:R>", e.end_timestamp), false);
+        other_embed.field(e.name, format!("Ends : <t:{}:R>", e.end_timestamp.expect("No End Timestamp")), false);
     }
     embeds.push(other_embed);
 
@@ -168,7 +168,7 @@ async fn create_status_embed() -> Vec<CreateEmbed> {
             let mut upcoming_embed = CreateEmbed::default();
             question_marks = format!("{}?", question_marks);
             upcoming_embed.title(&e.name);
-            upcoming_embed.description(format!("Starts : <t:{}:R>", e.start_timestamp));
+            upcoming_embed.description(format!("Starts : <t:{}:R>", e.start_timestamp.expect("No Start Timestamp")));
             upcoming_embed.color(Colour::new(rand::thread_rng().gen_range(0x000000..0xffffff)));
 
             match &e.image {

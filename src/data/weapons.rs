@@ -1,3 +1,4 @@
+use std::fs;
 use reqwest::Url;
 use serde_derive::{Serialize, Deserialize};
 use serenity::builder::CreateEmbed;
@@ -113,9 +114,8 @@ impl Weapon {
     }
 }
 
-pub async fn test_weapons() {
-    for w in Weapon::get_all().await {
-        println!("------------------");
-        println!("{}", w);
-    }
+#[test]
+fn test_weapon() {
+    let data = fs::read_to_string("test/weapon.json").expect("No Weapon test file");
+    serde_json::from_str::<Weapon>(&data).expect("Didn't work");
 }

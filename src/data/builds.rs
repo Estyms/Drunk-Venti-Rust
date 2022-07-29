@@ -1,3 +1,4 @@
+use std::fs;
 use reqwest::Url;
 use serde_derive::{Serialize, Deserialize};
 
@@ -11,15 +12,14 @@ pub struct RoleWeapon {
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct RoleStat {
-    pub sands: Box<str>,
-    pub goblet: Box<str>,
-    pub circlet: Box<str>
+    pub sands: Vec<Box<str>>,
+    pub goblet: Vec<Box<str>>,
+    pub circlet: Vec<Box<str>>
 }
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
 pub struct Role{
-    pub name: Box<str>,
     pub recommended: bool,
     pub weapons: Vec<RoleWeapon>,
     pub artifacts: Vec<Vec<Box<str>>>,
@@ -28,6 +28,7 @@ pub struct Role{
     pub talent: Vec<Box<str>>,
     pub tip: Box<str>,
     pub note: Box<str>,
+    pub name: Box<str>,
 }
 
 #[derive(Serialize, Deserialize, Debug)]
@@ -37,12 +38,14 @@ pub struct Builds {
 }
 
 impl Builds {
+    #[allow(dead_code)]
     pub(crate) async fn get(build: &str) -> Builds {
         let url = format!("http://localhost:3000/api/builds/{}", build);
         let url = Url::parse(&*url).expect("Can't convert url");
         return reqwest::get(url).await.expect("Can't access Url").json::<Builds>().await.expect("Wrong json format");
     }
 
+    #[allow(dead_code)]
     async fn get_all() -> Vec<Box<str>> {
         let url = format!("http://localhost:3000/api/builds");
         let url = Url::parse(&*url).expect("Can't convert url");
@@ -50,12 +53,8 @@ impl Builds {
     }
 }
 
-
-pub async fn test_builds() {
-    for a in Builds::get_all().await {
-        println!("------------------");
-        let builds = Builds::get(&a).await;
-        println!("Roles for {} : {:?}\n", a, builds.roles.into_iter().map(|x| x.name).collect::<Vec<Box<str>>>());
-    }
-
+#[test]
+fn test_build() {
+    let data = fs::read_to_string("test/build.json").expect("No build test file");
+    serde_json::from_str::<Builds>(&data).expect("Didn't work");
 }
