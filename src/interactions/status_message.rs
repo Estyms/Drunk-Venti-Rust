@@ -42,7 +42,9 @@ pub async fn update_status_message(ctx: Context) {
                         }).await.unwrap();
 
                     }
-                    Err(_) => {}
+                    Err(_) => {
+                        println!("Cannot update guild : {}", sm.channel_id);
+                    }
                 }
             }
             interval.tick().await;
