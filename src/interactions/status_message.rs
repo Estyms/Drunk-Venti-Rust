@@ -33,7 +33,7 @@ pub async fn update_status_message(ctx: Context) {
 
             let embeds = create_status_embed().await;
             for sm in x {
-                if sm.guild_id == 0 {continue;}
+                if sm.channel_id == 0 {continue;}
                 let msg = ChannelId::from(sm.channel_id as u64).message(&ctx.http, sm.message_id as u64).await;
                 match msg {
                     Ok(mut m) => {
