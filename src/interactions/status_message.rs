@@ -37,9 +37,12 @@ pub async fn update_status_message(ctx: Context) {
                 match msg {
                     Ok(mut m) => {
                         let copies = copy_embed(&embeds);
-                        m.edit(&ctx.http, |f| {
+                        match m.edit(&ctx.http, |f| {
                             f.set_embeds(copies)
-                        }).await.unwrap();
+                        }).await {
+                            Ok(_) => {},
+                            Err(e) => println!("Error while editing message {}", e)
+                        }
 
                     }
                     Err(_) => {
