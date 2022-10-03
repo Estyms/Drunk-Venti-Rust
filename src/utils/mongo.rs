@@ -3,7 +3,7 @@ use mongodb::{Client, Collection, options::ClientOptions};
 use futures::stream::{TryStreamExt};
 use serde::{Serialize, Deserialize};
 
-#[derive(Serialize, Deserialize, Debug)]
+#[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct StatusMessage {
     pub(crate) guild_id: i64,
     pub(crate) message_id: i64,

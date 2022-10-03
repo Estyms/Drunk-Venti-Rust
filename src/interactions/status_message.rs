@@ -1,3 +1,6 @@
+use std::borrow::Borrow;
+use std::ops::Add;
+use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use rand::Rng;
 use serenity::{
@@ -7,6 +10,7 @@ use serenity::{
 };
 use serenity::builder::CreateEmbed;
 use serenity::model::id::{ChannelId, MessageId};
+use rayon::prelude::*;
 
 use serenity::model::interactions::application_command::ApplicationCommandInteraction;
 use serenity::model::interactions::InteractionApplicationCommandCallbackDataFlags;
@@ -27,30 +31,34 @@ pub fn copy_embed(from: &Vec<CreateEmbed>) -> Vec<CreateEmbed> {
 pub async fn update_status_message(ctx: Context) {
     let forever = tokio::task::spawn(async move {
         let mut interval = tokio::time::interval(Duration::from_secs(60*60));
+        let mut counter = Arc::new(Mutex::new(0));
         loop {
             let mut x = get_all_status_messages().await;
             x.reverse();
-
             let embeds = create_status_embed().await;
             for sm in x {
-                if sm.channel_id == 0 {continue;}
-                let msg = ChannelId::from(sm.channel_id as u64).message(&ctx.http, sm.message_id as u64).await;
-                match msg {
-                    Ok(mut m) => {
-                        let copies = copy_embed(&embeds);
-                        match m.edit(&ctx.http, |f| {
-                            f.set_embeds(copies)
-                        }).await {
-                            Ok(_) => {},
-                            Err(e) => println!("Error while editing message {}", e)
+                let embeds : Vec<CreateEmbed> = (&embeds).clone();
+                let ctx = ctx.borrow().clone();
+                tokio::spawn( async move {
+                    if sm.channel_id == 0 { return }
+                    let msg = ChannelId::from(sm.channel_id as u64).message(ctx.borrow().clone().http, sm.message_id as u64).await;
+                    match msg {
+                        Ok(mut m) => {
+                            match m.edit(&ctx.http, |f| {
+                                f.set_embeds((*embeds).to_owned())
+                            }).await {
+                                Ok(_) => {
+                                },
+                                Err(e) => println!("Error while editing message {}", e)
+                            }
                         }
+                        Err(_) => {
+                            println!("Cannot update guild : {}", sm.channel_id);
+                        }
+                    }
+                });
+            };
 
-                    }
-                    Err(_) => {
-                        println!("Cannot update guild : {}", sm.channel_id);
-                    }
-                }
-            }
             interval.tick().await;
         }
     });
