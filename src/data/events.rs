@@ -1,4 +1,4 @@
-use std::fs;
+use std::env;
 use reqwest::Url;
 use serde_derive::{Serialize, Deserialize};
 
@@ -27,21 +27,27 @@ impl Clone for Event {
 impl Event {
     #[allow(dead_code)]
     pub(crate) async fn get_current() -> Vec<Event> {
-        let url = format!("http://localhost:3000/api/events/current");
+        let host = env::var("API_HOST").unwrap();
+        let port = env::var("API_PORT").unwrap();
+        let url = format!("http://{}:{}/api/events/current", host, port);
         let url = Url::parse(&*url).expect("Can't convert url");
         return reqwest::get(url).await.expect("Can't access Url").json::<Vec<Event>>().await.expect("Wrong json format");
     }
 
     #[allow(dead_code)]
     pub(crate) async fn get_upcoming() -> Vec<Event> {
-        let url = format!("http://localhost:3000/api/events/upcoming");
+        let host = env::var("API_HOST").unwrap();
+        let port = env::var("API_PORT").unwrap();
+        let url = format!("http://{}:{}/api/events/upcoming", host, port);
         let url = Url::parse(&*url).expect("Can't convert url");
         return reqwest::get(url).await.expect("Can't access Url").json::<Vec<Event>>().await.expect("Wrong json format");
     }
 
     #[allow(dead_code)]
     async fn get_all() -> Vec<Event> {
-        let url = format!("http://localhost:3000/api/events");
+        let host = env::var("API_HOST").unwrap();
+        let port = env::var("API_PORT").unwrap();
+        let url = format!("http://{}:{}/api/events", host, port);
         let url = Url::parse(&*url).expect("Can't convert url");
         return reqwest::get(url).await.expect("Can't access Url").json::<Vec<Event>>().await.expect("Wrong json format");
     }
@@ -49,6 +55,6 @@ impl Event {
 
 #[test]
 fn test_events() {
-    let data = fs::read_to_string("test/events.json").expect("No events test file");
+    let data = std::fs::read_to_string("test/events.json").expect("No events test file");
     serde_json::from_str::<Vec<Event>>(&data).expect("Didn't work");
 }

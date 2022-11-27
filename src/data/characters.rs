@@ -1,4 +1,4 @@
-use std::fs;
+use std::env;
 use reqwest::Url;
 use serde_derive::{Serialize, Deserialize};
 use crate::data::builds::{Role};
@@ -47,23 +47,28 @@ impl Clone for Character {
 impl Character {
     #[allow(dead_code)]
     pub(crate) async fn get(character: &str) -> Character {
-        let url = format!("http://localhost:3000/api/characters/{}", character);
+        let host = env::var("API_HOST").unwrap();
+        let port = env::var("API_PORT").unwrap();
+        let url = format!("http://{}:{}/api/characters/{}", host, port, character);
         let url = Url::parse(&*url).expect("Can't convert url");
         let a  = reqwest::get(url.clone()).await.expect("Can't access Url");
-        println!("{}",&a.text().await.expect(""));
         return reqwest::get(url).await.expect("Can't access Url").json::<Character>().await.expect("Wrong json format");
     }
 
     #[allow(dead_code)]
     async fn get_all() -> Vec<Box<str>> {
-        let url = format!("http://localhost:3000/api/characters");
+        let host = env::var("API_HOST").unwrap();
+        let port = env::var("API_PORT").unwrap();
+        let url = format!("http://{}:{}/api/characters", host, port);
         let url = Url::parse(&*url).expect("Can't convert url");
         return reqwest::get(url).await.expect("Can't access Url").json::<Vec<Box<str>>>().await.expect("Wrong json format");
     }
 
     #[allow(dead_code)]
     pub(crate) async fn search(character: &str) -> Vec<Character> {
-        let url = format!("http://localhost:3000/api/characters/search/{}", character);
+        let host = env::var("API_HOST").unwrap();
+        let port = env::var("API_PORT").unwrap();
+        let url = format!("http://{}:{}/api/characters/search/{}", host, port, character);
         let url = Url::parse(&*url).expect("Can't convert url");
         return reqwest::get(url).await.expect("Can't access Url").json::<Vec<Character>>().await.expect("Wrong json format");
     }
@@ -71,6 +76,6 @@ impl Character {
 
 #[test]
 fn test_character() {
-    let data = fs::read_to_string("test/character.json").expect("No character test file");
+    let data = std::fs::read_to_string("test/character.json").expect("No character test file");
     serde_json::from_str::<Character>(&data).expect("Didn't work");
 }

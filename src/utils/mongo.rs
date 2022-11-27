@@ -1,3 +1,4 @@
+use std::env;
 use mongodb::bson::{Bson, doc, Document, from_bson, to_bson};
 use mongodb::{Client, Collection, options::ClientOptions};
 use futures::stream::{TryStreamExt};
@@ -59,7 +60,9 @@ pub async fn get_all_status_messages() -> Vec<StatusMessage> {
 
 #[allow(dead_code)]
 async fn get_mongo_client() -> Client {
-    let mut client_options = ClientOptions::parse("mongodb://localhost:27017/?readPreference=primary&appname=MongoDB%20Compass&directConnection=true&ssl=false").await.expect("Can't connect to db");
+    let host = env::var("MONGO_HOST").unwrap();
+    let port = env::var("MONGO_PORT").unwrap();
+    let mut client_options = ClientOptions::parse(format!("mongodb://{}:{}/?readPreference=primary&appname=MongoDB%20Compass&directConnection=true&ssl=false", host, port)).await.expect("Can't connect to db");
     client_options.app_name = Some("Drunk Venti".to_string());
     client_options.default_database = Some("drunk_venti".to_string());
 

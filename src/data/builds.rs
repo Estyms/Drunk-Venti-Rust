@@ -1,4 +1,4 @@
-use std::fs;
+use std::env;
 use reqwest::Url;
 use serde_derive::{Serialize, Deserialize};
 
@@ -40,14 +40,18 @@ pub struct Builds {
 impl Builds {
     #[allow(dead_code)]
     pub(crate) async fn get(build: &str) -> Builds {
-        let url = format!("http://localhost:3000/api/builds/{}", build);
+        let host = env::var("API_HOST").unwrap();
+        let port = env::var("API_PORT").unwrap();
+        let url = format!("http://{}:{}/api/builds/{}", host, port, build);
         let url = Url::parse(&*url).expect("Can't convert url");
         return reqwest::get(url).await.expect("Can't access Url").json::<Builds>().await.expect("Wrong json format");
     }
 
     #[allow(dead_code)]
     async fn get_all() -> Vec<Box<str>> {
-        let url = format!("http://localhost:3000/api/builds");
+        let host = env::var("API_HOST").unwrap();
+        let port = env::var("API_PORT").unwrap();
+        let url = format!("http://{}:{}/api/builds", host, port);
         let url = Url::parse(&*url).expect("Can't convert url");
         return reqwest::get(url).await.expect("Can't access Url").json::<Vec<Box<str>>>().await.expect("Wrong json format");
     }
@@ -55,6 +59,6 @@ impl Builds {
 
 #[test]
 fn test_build() {
-    let data = fs::read_to_string("test/build.json").expect("No build test file");
+    let data = std::fs::read_to_string("test/build.json").expect("No build test file");
     serde_json::from_str::<Builds>(&data).expect("Didn't work");
 }

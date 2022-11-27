@@ -1,4 +1,4 @@
-use std::fs;
+use std::env;
 use reqwest::Url;
 use serde_derive::{Serialize, Deserialize};
 
@@ -15,20 +15,26 @@ pub struct Item {
 impl Item{
     #[allow(dead_code)]
     async fn get(item: &str) -> Item {
-        let url = format!("http://localhost:3000/api/items/{}", item);
+        let host = env::var("API_HOST").unwrap();
+        let port = env::var("API_PORT").unwrap();
+        let url = format!("http://{}:{}/api/items/{}", host, port, item);
         let url = Url::parse(&*url).expect("Can't convert url");
         return reqwest::get(url).await.expect("Can't access Url").json::<Item>().await.expect("Wrong json format");
     }
     #[allow(dead_code)]
     async fn get_all() -> Vec<Box<str>> {
-        let url = format!("http://localhost:3000/api/items");
+        let host = env::var("API_HOST").unwrap();
+        let port = env::var("API_PORT").unwrap();
+        let url = format!("http://{}:{}/api/items", host, port);
         let url = Url::parse(&*url).expect("Can't convert url");
         return reqwest::get(url).await.expect("Can't access Url").json::<Vec<Box<str>>>().await.expect("Wrong json format");
     }
 
     #[allow(dead_code)]
     async fn search(item: &str) -> Vec<Item> {
-        let url = format!("http://localhost:3000/api/items/search/{}", item);
+        let host = env::var("API_HOST").unwrap();
+        let port = env::var("API_PORT").unwrap();
+        let url = format!("http://{}:{}/api/items/search/{}", host, port, item);
         let url = Url::parse(&*url).expect("Can't convert url");
         return reqwest::get(url).await.expect("Can't access Url").json::<Vec<Item>>().await.expect("Wrong json format");
     }
@@ -36,6 +42,6 @@ impl Item{
 
 #[test]
 fn test_item() {
-    let data = fs::read_to_string("test/item.json").expect("No item test file");
+    let data = std::fs::read_to_string("test/item.json").expect("No item test file");
     serde_json::from_str::<Item>(&data).expect("Didn't work");
 }

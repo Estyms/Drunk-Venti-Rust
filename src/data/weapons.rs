@@ -1,4 +1,4 @@
-use std::fs;
+use std::env;
 use reqwest::Url;
 use serde_derive::{Serialize, Deserialize};
 use serenity::builder::CreateEmbed;
@@ -53,21 +53,27 @@ pub struct Weapon {
 impl Weapon {
     #[allow(dead_code)]
     pub async fn get(weapon: &str) -> Weapon {
-        let url = format!("http://localhost:3000/api/weapons/{}", weapon);
+        let host = env::var("API_HOST").unwrap();
+        let port = env::var("API_PORT").unwrap();
+        let url = format!("http://{}:{}/api/weapons/{}", host, port, weapon);
         let url = Url::parse(&*url).expect("Can't convert url");
         return reqwest::get(url).await.expect("Can't access Url").json::<Weapon>().await.expect("Wrong json format");
     }
 
     #[allow(dead_code)]
     pub async fn get_all() -> Vec<Box<str>> {
-        let url = format!("http://localhost:3000/api/weapons");
+        let host = env::var("API_HOST").unwrap();
+        let port = env::var("API_PORT").unwrap();
+        let url = format!("http://{}:{}/api/weapons", host, port);
         let url = Url::parse(&*url).expect("Can't convert url");
         return reqwest::get(url).await.expect("Can't access Url").json::<Vec<Box<str>>>().await.expect("Wrong json format");
     }
 
     #[allow(dead_code)]
     pub async fn search(weapon: &str) -> Vec<Weapon> {
-        let url = format!("http://localhost:3000/api/weapons/search/{}", weapon);
+        let host = env::var("API_HOST").unwrap();
+        let port = env::var("API_PORT").unwrap();
+        let url = format!("http://{}:{}/api/weapons/search/{}", host, port, weapon);
         let url = Url::parse(&*url).expect("Can't convert url");
         return reqwest::get(url).await.expect("Can't access Url").json::<Vec<Weapon>>().await.expect("Wrong json format");
     }
@@ -116,6 +122,6 @@ impl Weapon {
 
 #[test]
 fn test_weapon() {
-    let data = fs::read_to_string("test/weapon.json").expect("No Weapon test file");
+    let data = std::fs::read_to_string("test/weapon.json").expect("No Weapon test file");
     serde_json::from_str::<Weapon>(&data).expect("Didn't work");
 }

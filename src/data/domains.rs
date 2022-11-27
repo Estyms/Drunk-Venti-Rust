@@ -1,4 +1,4 @@
-use std::fs;
+use std::env;
 use reqwest::Url;
 use serde_derive::{Serialize, Deserialize};
 
@@ -42,14 +42,18 @@ pub struct Domain {
 impl Domain {
     #[allow(dead_code)]
     pub async fn get(domain: &str) -> Domain {
-        let url = format!("http://localhost:3000/api/domains/{}", domain);
+        let host = env::var("API_HOST").unwrap();
+        let port = env::var("API_PORT").unwrap();
+        let url = format!("http://{}:{}/api/domains/{}", host, port, domain);
         let url = Url::parse(&*url).expect("Can't convert url");
         return reqwest::get(url).await.expect("Can't access Url").json::<Domain>().await.expect("Wrong json format");
     }
 
     #[allow(dead_code)]
     async fn get_all() -> Vec<Box<str>> {
-        let url = format!("http://localhost:3000/api/domains");
+        let host = env::var("API_HOST").unwrap();
+        let port = env::var("API_PORT").unwrap();
+        let url = format!("http://{}:{}/api/domains", host, port);
         let url = Url::parse(&*url).expect("Can't convert url");
         return reqwest::get(url).await.expect("Can't access Url").json::<Vec<Box<str>>>().await.expect("Wrong json format");
     }
@@ -63,6 +67,6 @@ impl Domain {
 
 #[test]
 fn test_items() {
-    let data = fs::read_to_string("test/domain.json").expect("No Domain test file");
+    let data = std::fs::read_to_string("test/domain.json").expect("No Domain test file");
     serde_json::from_str::<Domain>(&data).expect("Didn't work");
 }

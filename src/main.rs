@@ -129,18 +129,19 @@ impl EventHandler for Handler {
     }
 }
 
+fn test_environment() {
+    env::var("DISCORD_TOKEN").expect("DISCORD_TOKEN needed");
+    env::var("MONGO_HOST").expect("MONGO_HOST needed");
+    env::var("MONGO_PORT").expect("MONGO_PORT needed");
+    env::var("API_HOST").expect("API_HOST needed");
+    env::var("API_PORT").expect("API_PORT needed");
+}
 
 #[tokio::main]
 async fn main() {
     dotenv().ok();
-    let mut token= "".to_string();
-    for (k, v) in env::vars() {
-        if k.eq("DISCORD_TOKEN") {
-            token = v;
-            break;
-        }
-    }
-
+    test_environment();
+    let token= env::var("DISCORD_TOKEN").unwrap();
     let application_id: u64 = "860553396578811914".parse().expect("Wrong format");
 
     let needed_intents = [

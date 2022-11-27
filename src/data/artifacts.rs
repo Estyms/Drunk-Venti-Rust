@@ -1,4 +1,4 @@
-use std::fs;
+use std::env;
 use reqwest::Url;
 use serde_derive::{Serialize, Deserialize};
 use serenity::builder::CreateEmbed;
@@ -28,21 +28,27 @@ pub struct Artifact {
 impl Artifact{
     #[allow(dead_code)]
     pub async fn get(artifact: &str) -> Artifact {
-        let url = format!("http://localhost:3000/api/artifacts/{}", artifact);
+        let host = env::var("API_HOST").unwrap();
+        let port = env::var("API_PORT").unwrap();
+        let url = format!("http://{}:{}/api/artifacts/{}", host, port, artifact);
         let url = Url::parse(&*url).expect("Can't convert url");
         return reqwest::get(url).await.expect("Can't access Url").json::<Artifact>().await.expect("Wrong json format");
     }
 
     #[allow(dead_code)]
     async fn get_all() -> Vec<Box<str>> {
-        let url = format!("http://localhost:3000/api/artifacts");
+        let host = env::var("API_HOST").unwrap();
+        let port = env::var("API_PORT").unwrap();
+        let url = format!("http://{}:{}/api/artifacts", host, port);
         let url = Url::parse(&*url).expect("Can't convert url");
         return reqwest::get(url).await.expect("Can't access Url").json::<Vec<Box<str>>>().await.expect("Wrong json format");
     }
 
     #[allow(dead_code)]
     pub(crate) async fn search(artifact: &str) -> Vec<Artifact> {
-        let url = format!("http://localhost:3000/api/artifacts/search/{}", artifact);
+        let host = env::var("API_HOST").unwrap();
+        let port = env::var("API_PORT").unwrap();
+        let url = format!("http://{}:{}/api/artifacts/search/{}", host, port, artifact);
         let url = Url::parse(&*url).expect("Can't convert url");
         return reqwest::get(url).await.expect("Can't access Url").json::<Vec<Artifact>>().await.expect("Wrong json format");
     }
@@ -86,6 +92,6 @@ impl Artifact{
 
 #[test]
 fn test_artifact() {
-    let data = fs::read_to_string("test/artifact.json").expect("No Artifact test file");
+    let data = std::fs::read_to_string("test/artifact.json").expect("No Artifact test file");
     serde_json::from_str::<Artifact>(&data).expect("Didn't work");
 }

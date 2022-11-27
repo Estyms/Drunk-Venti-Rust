@@ -1,6 +1,4 @@
 use std::borrow::Borrow;
-use std::ops::Add;
-use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use rand::Rng;
 use serenity::{
@@ -10,7 +8,6 @@ use serenity::{
 };
 use serenity::builder::CreateEmbed;
 use serenity::model::id::{ChannelId, MessageId};
-use rayon::prelude::*;
 
 use serenity::model::interactions::application_command::ApplicationCommandInteraction;
 use serenity::model::interactions::InteractionApplicationCommandCallbackDataFlags;
@@ -20,18 +17,9 @@ use crate::interactions::data::events::Event;
 use crate::utils::mongo::{add_discord_status_message, get_all_status_messages, get_discord_status_message, StatusMessage};
 
 
-pub fn copy_embed(from: &Vec<CreateEmbed>) -> Vec<CreateEmbed> {
-    let mut cln: Vec<CreateEmbed> = vec![];
-    for x in from {
-        cln.push(x.clone());
-    }
-    cln
-}
-
 pub async fn update_status_message(ctx: Context) {
     let forever = tokio::task::spawn(async move {
         let mut interval = tokio::time::interval(Duration::from_secs(60*60));
-        let mut counter = Arc::new(Mutex::new(0));
         loop {
             let mut x = get_all_status_messages().await;
             x.reverse();
@@ -47,8 +35,7 @@ pub async fn update_status_message(ctx: Context) {
                             match m.edit(&ctx.http, |f| {
                                 f.set_embeds((*embeds).to_owned())
                             }).await {
-                                Ok(_) => {
-                                },
+                                Ok(_) => {},
                                 Err(e) => println!("Error while editing message {}", e)
                             }
                         }
