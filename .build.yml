@@ -29,12 +29,12 @@ tasks:
     cargo test
 - build-image: |
     cd Drunk-Venti-Rust
-    V=$(cargo get version --pretty)
     N=$(cargo get -n)
     sudo docker build -t r.evannregnault.dev/$N:latest ./
 - push-image: |
     cd Drunk-Venti-Rust
-
+    V=$(cargo get version --pretty)
+    N=$(cargo get -n)
     sudo docker tag r.evannregnault.dev/$n:latest r.evannregnault.dev/$N:$V
     sudo docker push r.evannregnault.dev/$N:latest
     sudo docker push r.evannregnault.dev/$N:$V
