@@ -14,7 +14,7 @@ secrets:
 - ba3c7daf-1c29-4099-aa0f-2d62633e648e
 shell: false
 sources:
-- https://git.sr.ht/~estym/Drunk-Venti-Rust#e668f4f0ddcffd9981a69082b48d34b7bef4848f
+- https://git.sr.ht/~estym/Drunk-Venti-Rust
 tasks:
 - setup : |
     sudo mount -t tmpfs -o size=4G /dev/null /dev/shm
