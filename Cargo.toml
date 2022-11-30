@@ -1,6 +1,6 @@
 [package]
 name = "drunk-venti-rust"
-version = "1.0.3"
+version = "1.0.4"
 edition = "2021"
 authors = ["Evann Regnault"]
 license = "MIT"

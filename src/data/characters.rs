@@ -51,7 +51,6 @@ impl Character {
         let port = env::var("API_PORT").unwrap();
         let url = format!("http://{}:{}/api/characters/{}", host, port, character);
         let url = Url::parse(&*url).expect("Can't convert url");
-        let a  = reqwest::get(url.clone()).await.expect("Can't access Url");
         return reqwest::get(url).await.expect("Can't access Url").json::<Character>().await.expect("Wrong json format");
     }
 
