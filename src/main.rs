@@ -20,6 +20,7 @@ use serenity::{
 };
 use serenity::client::bridge::gateway::GatewayIntents;
 use serenity::model::gateway::Activity;
+use serenity::model::prelude::OnlineStatus;
 use crate::interactions::genshin::artifacts::show_artifact_embed;
 use crate::interactions::genshin::build::build_interact;
 use crate::interactions::genshin::weapons::show_weapon_embed;
@@ -32,7 +33,7 @@ impl EventHandler for Handler {
     async fn ready(&self, _ctx: Context, _bot: Ready) {
         println!("{} connected!", _bot.user.name);
         update_status_message(_ctx.clone()).await;
-        _ctx.set_activity(Activity::playing("Drinking")).await;
+        _ctx.set_presence(Some(Activity::playing("getting drunk with Kaeya")), OnlineStatus::Online).await;
 
         let x = ApplicationCommand::get_global_application_commands(&_ctx.http).await.unwrap();
         for i in x {
