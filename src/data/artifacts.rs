@@ -25,9 +25,23 @@ pub struct Artifact {
     pub domain: Option<Box<str>>
 }
 
+pub fn get_real_artifact_name(artifact: &str) -> &str {
+    match artifact {
+        "+18%_atk_set" => "gladiators_finale",
+        "+20%_energy_recharge" => "emblem_of_severed_fate",
+        "+25%_physical_dmg" => "bloodstained_chivalry",
+        "+80_em" => "gilded_dreams",
+        "+15%_healing_bonus_set" => "ocean-hued_clam",
+        _ => artifact
+    }
+}
+
 impl Artifact{
+
+
     #[allow(dead_code)]
     pub async fn get(artifact: &str) -> Artifact {
+        let artifact = get_real_artifact_name(artifact);
         let host = env::var("API_HOST").unwrap();
         let port = env::var("API_PORT").unwrap();
         let url = format!("http://{}:{}/api/artifacts/{}", host, port, artifact);
@@ -46,6 +60,7 @@ impl Artifact{
 
     #[allow(dead_code)]
     pub(crate) async fn search(artifact: &str) -> Vec<Artifact> {
+        let artifact = get_real_artifact_name(artifact);
         let host = env::var("API_HOST").unwrap();
         let port = env::var("API_PORT").unwrap();
         let url = format!("http://{}:{}/api/artifacts/search/{}", host, port, artifact);
@@ -94,4 +109,18 @@ impl Artifact{
 fn test_artifact() {
     let data = std::fs::read_to_string("test/artifact.json").expect("No Artifact test file");
     serde_json::from_str::<Artifact>(&data).expect("Didn't work");
+}
+
+#[test]
+fn test_real_artfifact_name() {
+    match get_real_artifact_name("+18%_atk_set") {
+        "gladiators_finale" => {}
+        _ => panic!()
+    };
+
+    match get_real_artifact_name("lasfhkalkfhafsk") {
+        "lasfhkalkfhafsk" => {}
+        _ => panic!()
+    };
+
 }
