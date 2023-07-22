@@ -1,5 +1,5 @@
 use serenity::client::Context;
-use serenity::model::interactions::application_command::ApplicationCommandInteraction;
+use serenity::model::application::interaction::application_command::ApplicationCommandInteraction;
 use crate::interactions::genshin::artifacts::genshin_artifact_interaction;
 use crate::interactions::genshin::build::genshin_build_interaction;
 use crate::interactions::genshin::weapons::genshin_weapon_interaction;

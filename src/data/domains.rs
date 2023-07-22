@@ -45,8 +45,8 @@ impl Domain {
         let host = env::var("API_HOST").unwrap();
         let port = env::var("API_PORT").unwrap();
         let url = format!("http://{}:{}/api/domains/{}", host, port, domain);
-        let url = Url::parse(&*url).expect("Can't convert url");
-        return reqwest::get(url).await.expect("Can't access Url").json::<Domain>().await.expect("Wrong json format");
+        let url = Url::parse(&url).expect("Can't convert url");
+        reqwest::get(url).await.expect("Can't access Url").json::<Domain>().await.expect("Wrong json format")
     }
 
     #[allow(dead_code)]
@@ -54,13 +54,13 @@ impl Domain {
         let host = env::var("API_HOST").unwrap();
         let port = env::var("API_PORT").unwrap();
         let url = format!("http://{}:{}/api/domains", host, port);
-        let url = Url::parse(&*url).expect("Can't convert url");
-        return reqwest::get(url).await.expect("Can't access Url").json::<Vec<Box<str>>>().await.expect("Wrong json format");
+        let url = Url::parse(&url).expect("Can't convert url");
+        reqwest::get(url).await.expect("Can't access Url").json::<Vec<Box<str>>>().await.expect("Wrong json format")
     }
 
     #[allow(dead_code)]
     pub fn name(&self) -> String {
-        return self.name.to_string();
+        self.name.to_string()
     }
 }
 

@@ -1,6 +1,6 @@
 [package]
 name = "drunk-venti-rust"
-version = "1.1.1"
+version = "1.2.0"
 edition = "2021"
 authors = ["Evann Regnault"]
 license = "MIT"
@@ -8,7 +8,7 @@ license = "MIT"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-serenity = { version = "0.10.9", default-features = false, features = ["client", "gateway", "rustls_backend", "model", "unstable_discord_api", "collector"] }
+serenity = { version = "0.11.6", default-features = false, features = ["client", "gateway", "rustls_backend", "model", "unstable_discord_api", "collector"] }
 tokio = { version = "1.0", features = ["macros", "rt-multi-thread"] }
 reqwest = "0.11.7"
 serde_derive = "1.0.140"

@@ -30,8 +30,8 @@ impl Event {
         let host = env::var("API_HOST").unwrap();
         let port = env::var("API_PORT").unwrap();
         let url = format!("http://{}:{}/api/events/current", host, port);
-        let url = Url::parse(&*url).expect("Can't convert url");
-        return reqwest::get(url).await.expect("Can't access Url").json::<Vec<Event>>().await.expect("Wrong json format");
+        let url = Url::parse(&url).expect("Can't convert url");
+        reqwest::get(url).await.expect("Can't access Url").json::<Vec<Event>>().await.expect("Wrong json format")
     }
 
     #[allow(dead_code)]
@@ -39,8 +39,8 @@ impl Event {
         let host = env::var("API_HOST").unwrap();
         let port = env::var("API_PORT").unwrap();
         let url = format!("http://{}:{}/api/events/upcoming", host, port);
-        let url = Url::parse(&*url).expect("Can't convert url");
-        return reqwest::get(url).await.expect("Can't access Url").json::<Vec<Event>>().await.expect("Wrong json format");
+        let url = Url::parse(&url).expect("Can't convert url");
+        reqwest::get(url).await.expect("Can't access Url").json::<Vec<Event>>().await.expect("Wrong json format")
     }
 
     #[allow(dead_code)]
@@ -48,8 +48,8 @@ impl Event {
         let host = env::var("API_HOST").unwrap();
         let port = env::var("API_PORT").unwrap();
         let url = format!("http://{}:{}/api/events", host, port);
-        let url = Url::parse(&*url).expect("Can't convert url");
-        return reqwest::get(url).await.expect("Can't access Url").json::<Vec<Event>>().await.expect("Wrong json format");
+        let url = Url::parse(&url).expect("Can't convert url");
+        reqwest::get(url).await.expect("Can't access Url").json::<Vec<Event>>().await.expect("Wrong json format")
     }
 }
 

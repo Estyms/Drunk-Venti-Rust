@@ -1,17 +1,24 @@
 use std::borrow::{Borrow};
 use linked_hash_map::LinkedHashMap;
-use serenity::builder::{CreateActionRow, CreateButton, CreateEmbed};
+use serenity::builder::{CreateActionRow, CreateButton, CreateComponents, CreateEmbed};
 use serenity::client::Context;
-use serenity::model::interactions::{InteractionApplicationCommandCallbackDataFlags, InteractionResponseType};
-use serenity::model::interactions::application_command::{ApplicationCommandInteraction, ApplicationCommandInteractionDataOption};
-use serenity::model::interactions::message_component::{ButtonStyle, MessageComponentInteraction};
+use serenity::model::application::component::ButtonStyle;
+use serenity::model::application::interaction::{
+    MessageFlags,
+    InteractionResponseType,
+    application_command::{
+        ApplicationCommandInteraction,
+        CommandDataOption
+    },
+    message_component::MessageComponentInteraction
+};
 use crate::data::artifacts::Artifact;
 use crate::data::builds::{Builds, Role};
 use crate::data::characters::Character;
 use crate::data::weapons::Weapon;
 use crate::interactions::utils::create_action_row_basic;
 
-pub async fn genshin_build_interaction(ctx: &Context, command: &ApplicationCommandInteraction, opt: &ApplicationCommandInteractionDataOption) {
+pub async fn genshin_build_interaction(ctx: &Context, command: &ApplicationCommandInteraction, opt: &CommandDataOption) {
     let char = opt.options.get(0).expect("No argument for command Genshin builds")
         .value.as_ref().expect("").as_str().expect("Not a string");
 
@@ -29,20 +36,17 @@ pub async fn genshin_build_interaction(ctx: &Context, command: &ApplicationComma
             .interaction_response_data(|d| {
                 d.content("Select a Character")
                     .components(|c| c.add_action_row(ar))
-                    .flags(InteractionApplicationCommandCallbackDataFlags::EPHEMERAL)
+                    .flags(MessageFlags::EPHEMERAL)
             })
     }).await.expect("Message didn't got sent");
 }
 
 fn is_menu(arg: &str) -> bool {
-    match arg {
-        "home" | "artifacts" | "weapons" | "notes" => true,
-        _ => false
-    }
+    matches!(arg, "home" | "artifacts" | "weapons" | "notes")
 }
 
 pub async fn build_interact(ctx: &Context, interaction: &MessageComponentInteraction, arguments: String) {
-    let mut args = arguments.split("_");
+    let mut args = arguments.split('_');
     let command = args.next();
 
 
@@ -74,8 +78,8 @@ pub async fn build_interact(ctx: &Context, interaction: &MessageComponentInterac
         _ => {
             let mut character = args.collect::<Vec<_>>().join("_");
             character = [command.expect(""), character.as_str()].join("_");
-            character = character.strip_suffix("_").unwrap_or(character.as_str()).parse().unwrap();
-            build_select(&ctx, &interaction, character).await;
+            character = character.strip_suffix('_').unwrap_or(character.as_str()).parse().unwrap();
+            build_select(ctx, interaction, character).await;
         }
     }
 }
@@ -127,32 +131,41 @@ async fn build_select(ctx: &Context, command: &MessageComponentInteraction, char
 
     let roles = &char.builds;
 
-    let roles = roles.into_iter().map(|c| c.name.to_string()).collect::<Vec<String>>();
+    let roles = roles.iter().map(|c| c.name.to_string()).collect::<Vec<String>>();
 
     let mut rolemap = LinkedHashMap::<String, String>::new();
     for i in 0..roles.len() {
         rolemap.insert(format!("{}_{}", i, character), roles.get(i).expect("").to_string());
     }
 
-    let ar = create_action_row_basic(rolemap, "build_home");
+    let ar = match roles.len() {
+        0 =>  CreateActionRow::default(),
+        _ =>create_action_row_basic(rolemap, "build_home")
+    };
 
     command.create_interaction_response(&ctx.http, |res| {
         res.kind(InteractionResponseType::UpdateMessage)
-            .interaction_response_data(|d| {
-                d.components(|c| c.add_action_row(ar))
-                    .create_embed(|e| {
-                        e.title(format!("{}", char.name))
-                            .thumbnail(format!("https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/characters/{}.png", char.id))
-                            .color(char.element.color)
-                            .description("Select a build !")
-                            .footer(|f| {
-                                f.text(format!("Data from : https://paimon.moe/characters/{}", char.id))
-                            })
-                    })
+            .interaction_response_data(|mut d| {
+                if !roles.is_empty() {
+                    d = d.components(|c| c.add_action_row(ar))
+                } else {
+                    d = d.set_components(CreateComponents::default())
+                }
+                d.embed(|mut e| {
+                    e = e.title(format!("{}", char.name))
+                        .thumbnail(format!("https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/characters/{}.png", char.id))
+                        .color(char.element.color)
+                        .description("Select a build !")
+                        .footer(|f| {
+                            f.text(format!("Data from : https://paimon.moe/characters/{}", char.id))
+                        });
+                    if roles.is_empty() {
+                        e = e.description("No builds available yet !")
+                    }
+                    e
+                })
             })
     }).await.expect("Can't send response");
-
-    return;
 }
 
 
@@ -175,8 +188,8 @@ pub async fn home_embed(role: &Role, character: Character) -> CreateEmbed {
     }
 
     embed.field("Skill Order",
-                role.talent.to_owned().into_iter().map(|t| format!("- {}\n", t))
-                    .collect::<Vec<String>>().join("").strip_suffix("\n").expect(""),
+                role.talent.iter().cloned().map(|t| format!("- {}\n", t))
+                    .collect::<Vec<String>>().join("").strip_suffix('\n').expect(""),
                 true,
     );
 
@@ -279,6 +292,7 @@ async fn artifact_embed(role: &Role, character: Character) -> CreateEmbed {
                         for art in a {
                             let artifact_name = match art.to_string().as_str() {
                                 "+18%_atk_set" => "+18% Atk Set".to_string(),
+                                "+80_em" => "Elemental Mastery +80 Set".to_string(),
                                 t => Artifact::get(t).await.name.to_string(),
                             };
                             artifact_string.push(format!("(2) {}", artifact_name));
@@ -288,17 +302,17 @@ async fn artifact_embed(role: &Role, character: Character) -> CreateEmbed {
                 }
                 all_artefacts_string.push(format!("- {}", str));
             }
-            _ => { all_artefacts_string.push(format!("- TBD")); }
+            _ => { all_artefacts_string.push("- TBD".to_string()); }
         }
     }
-    if all_artefacts_string.len() > 0 {
+    if !all_artefacts_string.is_empty() {
         embed.field("Best Artifacts", all_artefacts_string.join("\n"), false);
     } else {
         embed.field("Best Artifacts", "- TBD", false);
     }
 
     embed.field("Sub-stats", {
-        format!("- {}", role.sub_stats.join("\n-"))
+        format!("- {}", role.sub_stats.join("\n- "))
     }, false);
 
     embed.field("Circlet", &role.main_stats.circlet[0], true);
@@ -335,10 +349,10 @@ async fn weapons_embed(role: &Role, character: Character) -> CreateEmbed {
                 let weapon = Weapon::get(a.id.borrow()).await;
                 all_weapons_string.push(format!("- {}", weapon.name));
             }
-            _ => { all_weapons_string.push(format!("- TBD")); }
+            _ => { all_weapons_string.push("- TBD".to_string()); }
         }
     }
-    if all_weapons_string.len() > 0 {
+    if !all_weapons_string.is_empty() {
         embed.field("Best Weapons", all_weapons_string.join("\n"), false);
     } else {
         embed.field("Best Weapons", "- TBD", false);
@@ -358,51 +372,49 @@ async fn note_embed(role: &Role, character: Character) -> CreateEmbed {
     embed.thumbnail(format!("https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/characters/{}.png", character.id));
     embed.color(character.element.color);
 
-    match &role.note {
-        n=> {
-            let x = n.split("\n");
-            let mut first = true;
-            let mut add_before = "";
-            for note_paragraph in x.collect::<Vec<&str>>() {
-                if note_paragraph.len() == 0 {continue};
-                if note_paragraph.len() < 64 && add_before.len() == 0{
-                    add_before = note_paragraph;
-                    continue;
-                }
-                if add_before.len() > 0 {
-                    let note_paragraph = format!("**{}**\n{}", add_before, note_paragraph);
-                    embed.field(if first { "Notes" } else { "\u{200b}" }, note_paragraph, false);
-                    add_before = "";
-                } else {
-                    embed.field(if first { "Notes" } else { "\u{200b}" }, note_paragraph, false);
-                    first = false;
-                }
-
+    let n = &role.note;
+    {
+        let x = n.split('\n');
+        let mut first = true;
+        let mut add_before = "";
+        for note_paragraph in x.collect::<Vec<&str>>() {
+            if note_paragraph.is_empty() {continue};
+            if note_paragraph.len() < 64 && add_before.is_empty(){
+                add_before = note_paragraph;
+                continue;
             }
+            if !add_before.is_empty() {
+                let note_paragraph = format!("**{}**\n{}", add_before, note_paragraph);
+                embed.field(if first { "Notes" } else { "\u{200b}" }, note_paragraph, false);
+                add_before = "";
+            } else {
+                embed.field(if first { "Notes" } else { "\u{200b}" }, note_paragraph, false);
+                first = false;
+            }
+
         }
     };
 
-    match &role.tip {
-        n=> {
-            let x = n.split("\n");
-            let mut first = true;
-            let mut add_before = "";
-            for tip_paragraph in x.collect::<Vec<&str>>() {
-                if tip_paragraph.len() == 0 {continue};
-                if tip_paragraph.len() < 64 {
-                    add_before = tip_paragraph;
-                    continue;
-                }
-                if add_before.len() > 0 {
-                    let tip_paragraph = format!("**{}**\n{}", add_before, tip_paragraph);
-                    embed.field(if first { "Tips" } else { "\u{200b}" }, tip_paragraph, false);
-                    add_before = "";
-                } else {
-                    embed.field(if first { "Tips" } else { "\u{200b}" }, tip_paragraph, false);
-                    first = false;
-                }
-
+    let n = &role.tip;
+    {
+        let x = n.split('\n');
+        let mut first = true;
+        let mut add_before = "";
+        for tip_paragraph in x.collect::<Vec<&str>>() {
+            if tip_paragraph.is_empty() {continue};
+            if tip_paragraph.len() < 64 {
+                add_before = tip_paragraph;
+                continue;
             }
+            if !add_before.is_empty() {
+                let tip_paragraph = format!("**{}**\n{}", add_before, tip_paragraph);
+                embed.field(if first { "Tips" } else { "\u{200b}" }, tip_paragraph, false);
+                add_before = "";
+            } else {
+                embed.field(if first { "Tips" } else { "\u{200b}" }, tip_paragraph, false);
+                first = false;
+            }
+
         }
     };
 

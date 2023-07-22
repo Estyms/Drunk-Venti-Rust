@@ -18,16 +18,16 @@ impl Item{
         let host = env::var("API_HOST").unwrap();
         let port = env::var("API_PORT").unwrap();
         let url = format!("http://{}:{}/api/items/{}", host, port, item);
-        let url = Url::parse(&*url).expect("Can't convert url");
-        return reqwest::get(url).await.expect("Can't access Url").json::<Item>().await.expect("Wrong json format");
+        let url = Url::parse(&url).expect("Can't convert url");
+        reqwest::get(url).await.expect("Can't access Url").json::<Item>().await.expect("Wrong json format")
     }
     #[allow(dead_code)]
     async fn get_all() -> Vec<Box<str>> {
         let host = env::var("API_HOST").unwrap();
         let port = env::var("API_PORT").unwrap();
         let url = format!("http://{}:{}/api/items", host, port);
-        let url = Url::parse(&*url).expect("Can't convert url");
-        return reqwest::get(url).await.expect("Can't access Url").json::<Vec<Box<str>>>().await.expect("Wrong json format");
+        let url = Url::parse(&url).expect("Can't convert url");
+        reqwest::get(url).await.expect("Can't access Url").json::<Vec<Box<str>>>().await.expect("Wrong json format")
     }
 
     #[allow(dead_code)]
@@ -35,8 +35,8 @@ impl Item{
         let host = env::var("API_HOST").unwrap();
         let port = env::var("API_PORT").unwrap();
         let url = format!("http://{}:{}/api/items/search/{}", host, port, item);
-        let url = Url::parse(&*url).expect("Can't convert url");
-        return reqwest::get(url).await.expect("Can't access Url").json::<Vec<Item>>().await.expect("Wrong json format");
+        let url = Url::parse(&url).expect("Can't convert url");
+        reqwest::get(url).await.expect("Can't access Url").json::<Vec<Item>>().await.expect("Wrong json format")
     }
 }
 

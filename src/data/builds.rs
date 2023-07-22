@@ -43,8 +43,8 @@ impl Builds {
         let host = env::var("API_HOST").unwrap();
         let port = env::var("API_PORT").unwrap();
         let url = format!("http://{}:{}/api/builds/{}", host, port, build);
-        let url = Url::parse(&*url).expect("Can't convert url");
-        return reqwest::get(url).await.expect("Can't access Url").json::<Builds>().await.expect("Wrong json format");
+        let url = Url::parse(&url).expect("Can't convert url");
+        reqwest::get(url).await.expect("Can't access Url").json::<Builds>().await.expect("Wrong json format")
     }
 
     #[allow(dead_code)]
@@ -52,8 +52,8 @@ impl Builds {
         let host = env::var("API_HOST").unwrap();
         let port = env::var("API_PORT").unwrap();
         let url = format!("http://{}:{}/api/builds", host, port);
-        let url = Url::parse(&*url).expect("Can't convert url");
-        return reqwest::get(url).await.expect("Can't access Url").json::<Vec<Box<str>>>().await.expect("Wrong json format");
+        let url = Url::parse(&url).expect("Can't convert url");
+        reqwest::get(url).await.expect("Can't access Url").json::<Vec<Box<str>>>().await.expect("Wrong json format")
     }
 }
 

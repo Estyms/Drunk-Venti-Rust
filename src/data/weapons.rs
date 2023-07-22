@@ -56,8 +56,8 @@ impl Weapon {
         let host = env::var("API_HOST").unwrap();
         let port = env::var("API_PORT").unwrap();
         let url = format!("http://{}:{}/api/weapons/{}", host, port, weapon);
-        let url = Url::parse(&*url).expect("Can't convert url");
-        return reqwest::get(url).await.expect("Can't access Url").json::<Weapon>().await.expect("Wrong json format");
+        let url = Url::parse(&url).expect("Can't convert url");
+        reqwest::get(url).await.expect("Can't access Url").json::<Weapon>().await.expect("Wrong json format")
     }
 
     #[allow(dead_code)]
@@ -65,8 +65,8 @@ impl Weapon {
         let host = env::var("API_HOST").unwrap();
         let port = env::var("API_PORT").unwrap();
         let url = format!("http://{}:{}/api/weapons", host, port);
-        let url = Url::parse(&*url).expect("Can't convert url");
-        return reqwest::get(url).await.expect("Can't access Url").json::<Vec<Box<str>>>().await.expect("Wrong json format");
+        let url = Url::parse(&url).expect("Can't convert url");
+        reqwest::get(url).await.expect("Can't access Url").json::<Vec<Box<str>>>().await.expect("Wrong json format")
     }
 
     #[allow(dead_code)]
@@ -74,18 +74,18 @@ impl Weapon {
         let host = env::var("API_HOST").unwrap();
         let port = env::var("API_PORT").unwrap();
         let url = format!("http://{}:{}/api/weapons/search/{}", host, port, weapon);
-        let url = Url::parse(&*url).expect("Can't convert url");
-        return reqwest::get(url).await.expect("Can't access Url").json::<Vec<Weapon>>().await.expect("Wrong json format");
+        let url = Url::parse(&url).expect("Can't convert url");
+        reqwest::get(url).await.expect("Can't access Url").json::<Vec<Weapon>>().await.expect("Wrong json format")
     }
 
     #[allow(dead_code)]
     pub fn name(&self) -> &str {
-        return &self.name;
+        &self.name
     }
 
     #[allow(dead_code)]
     pub fn id(&self) -> &str {
-        return &self.id;
+        &self.id
     }
 
     #[allow(dead_code)]
@@ -98,17 +98,14 @@ impl Weapon {
         embed.thumbnail(format!("https://raw.githubusercontent.com/MadeBaruna/paimon-moe/main/static/images/weapons/{}.png", self.id));
 
         // Fields
-        match self.extras.skill.name.as_ref() {
-            Some(t) => {
-                let re = Regex::new("(<|</)span(?: [^>]*)?>").expect("Unknown regex");
-                embed.field(format!("Passive : {}", t),
-                            format!("{}",
-                                    re.replace_all(self.extras.skill.description.as_ref()
-                                                       .unwrap_or(&Box::from(""))
-                                                       .to_string().as_str(), "**")).replace("\\n","\n"),
-                            false);
-            }
-            _ => {}
+        if let Some(t) = self.extras.skill.name.as_ref() {
+            let re = Regex::new("(<|</)span(?: [^>]*)?>").expect("Unknown regex");
+            embed.field(format!("Passive : {}", t),
+                        format!("{}",
+                                re.replace_all(self.extras.skill.description.as_ref()
+                                                   .unwrap_or(&Box::from(""))
+                                                   .to_string().as_str(), "**")).replace("\\n","\n"),
+                        false);
         }
         embed.field("Main Stat", format!("{}", self.secondary), true);
         embed.field("Source", format!("{}", self.source), true);
@@ -116,7 +113,7 @@ impl Weapon {
         embed.field("Type", format!("{}", self.weapon_type.name), true);
         embed.field("Ascension Item", format!("{}", self.ascension.get(0).expect("").items.get(0).expect("").item.name), true);
         embed.field("\u{200b}", "\u{200b}", true);
-        return embed;
+        embed
     }
 }
 

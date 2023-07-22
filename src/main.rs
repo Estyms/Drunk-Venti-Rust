@@ -8,17 +8,18 @@ use serenity::{
     async_trait,
     model::{
         gateway::Ready,
-        interactions::{
-            application_command::{
-                ApplicationCommand,
-                ApplicationCommandOptionType,
+        application::{
+            command::{
+                Command,
+                CommandOptionType,
             },
-            Interaction,
+            interaction::{
+                Interaction
+            }
         },
     },
     prelude::*,
 };
-use serenity::client::bridge::gateway::GatewayIntents;
 use serenity::model::gateway::Activity;
 use serenity::model::prelude::OnlineStatus;
 use crate::interactions::genshin::artifacts::show_artifact_embed;
@@ -35,13 +36,16 @@ impl EventHandler for Handler {
         update_status_message(_ctx.clone()).await;
         _ctx.set_presence(Some(Activity::playing("getting drunk with Kaeya")), OnlineStatus::Online).await;
 
-        let x = ApplicationCommand::get_global_application_commands(&_ctx.http).await.unwrap();
+        let x = Command::get_global_application_commands(&_ctx.http).await.unwrap();
+        for y in &x {
+            println!("{}", y.name);
+        }
         for i in x {
             match i.name.as_str() {
                 "genshin" => (),
                 "createstatusmessage" => (),
                 _ => {
-                    let _result_delete = ApplicationCommand::delete_global_application_command(&_ctx.http, i.id).await;
+                    let _result_delete = Command::delete_global_application_command(&_ctx.http, i.id).await;
                     match _result_delete {
                         Ok(()) => { println!("Deleted command {}", i.name) }
                         Err(f) => { println!("An error occurred deleting {} : {}", i.name, f) }
@@ -50,35 +54,35 @@ impl EventHandler for Handler {
             }
         }
 
-        let x = ApplicationCommand::create_global_application_command(&_ctx.http, |command| {
+        let x = Command::create_global_application_command(&_ctx.http, |command| {
             command.name("genshin").description("Get Informations about Genshin Impact.").create_option(|option| {
                 option.name("builds")
                     .description("Shows builds for a Genshin Impact Characters")
-                    .kind(ApplicationCommandOptionType::SubCommand)
+                    .kind(CommandOptionType::SubCommand)
                     .create_sub_option(|so| {
                         so.name("character").description("Character to get builds for")
-                            .kind(ApplicationCommandOptionType::String)
+                            .kind(CommandOptionType::String)
                             .required(true)
                     })
             })
                 .create_option(|option| {
                     option.name("weapon")
                         .description("Shows infos on a Genshin Impact weapon.")
-                        .kind(ApplicationCommandOptionType::SubCommand)
+                        .kind(CommandOptionType::SubCommand)
                         .create_sub_option(|so| {
                             so.name("name").description("Weapon you want infos on.")
-                                .kind(ApplicationCommandOptionType::String)
+                                .kind(CommandOptionType::String)
                                 .required(true)
                         })
                 })
                 .create_option(|option| {
                     option.name("artifact")
                         .description("Shows infos on a Genshin Impact artifact set.")
-                        .kind(ApplicationCommandOptionType::SubCommand)
+                        .kind(CommandOptionType::SubCommand)
                         .create_sub_option(|so| {
                             so.name("artifact")
                                 .description("Artifact Set you want infos on.")
-                                .kind(ApplicationCommandOptionType::String)
+                                .kind(CommandOptionType::String)
                                 .required(true)
                         })
                 })
@@ -87,10 +91,10 @@ impl EventHandler for Handler {
             println!("{}", x.unwrap_err());
         }
 
-        ApplicationCommand::create_global_application_command(&_ctx.http, |command| {
+        Command::create_global_application_command(&_ctx.http, |command| {
             command.name("createstatusmessage").create_option(|opt| {
                 opt.name("channel").description("Channel where to put the status message")
-                    .kind(ApplicationCommandOptionType::Channel)
+                    .kind(CommandOptionType::Channel)
                     .required(true)
             }).description("Creates a status message of all the current events on Genshin Impact")
         }).await.expect("Can't create the createstatusmessage command");
@@ -107,7 +111,7 @@ impl EventHandler for Handler {
                 _ => interactions::pong(_ctx, command).await
             }
         } else if let Interaction::MessageComponent(component) = _interaction {
-            let mut args = component.data.custom_id.split("_");
+            let mut args = component.data.custom_id.split('_');
             let command = args.next();
             match command.unwrap() {
                 "weapon" => {
@@ -148,14 +152,13 @@ async fn main() {
     let needed_intents = [
         GatewayIntents::GUILDS,
         GatewayIntents::GUILD_MESSAGES,
-        GatewayIntents::GUILD_EMOJIS,
+        GatewayIntents::GUILD_EMOJIS_AND_STICKERS,
         GatewayIntents::GUILD_WEBHOOKS,
         GatewayIntents::GUILD_INTEGRATIONS
     ];
 
-    let mut client = Client::builder(token)
+    let mut client = Client::builder(token, GatewayIntents::from_iter(needed_intents.into_iter()))
         .event_handler(Handler)
-        .intents(GatewayIntents::from_iter(needed_intents.into_iter()))
         .application_id(application_id)
         .await
         .expect("Error creating the client");

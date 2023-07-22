@@ -45,8 +45,8 @@ impl Artifact{
         let host = env::var("API_HOST").unwrap();
         let port = env::var("API_PORT").unwrap();
         let url = format!("http://{}:{}/api/artifacts/{}", host, port, artifact);
-        let url = Url::parse(&*url).expect("Can't convert url");
-        return reqwest::get(url).await.expect("Can't access Url").json::<Artifact>().await.expect("Wrong json format");
+        let url = Url::parse(&url).expect("Can't convert url");
+        reqwest::get(url).await.expect("Can't access Url").json::<Artifact>().await.expect("Wrong json format")
     }
 
     #[allow(dead_code)]
@@ -54,8 +54,8 @@ impl Artifact{
         let host = env::var("API_HOST").unwrap();
         let port = env::var("API_PORT").unwrap();
         let url = format!("http://{}:{}/api/artifacts", host, port);
-        let url = Url::parse(&*url).expect("Can't convert url");
-        return reqwest::get(url).await.expect("Can't access Url").json::<Vec<Box<str>>>().await.expect("Wrong json format");
+        let url = Url::parse(&url).expect("Can't convert url");
+        reqwest::get(url).await.expect("Can't access Url").json::<Vec<Box<str>>>().await.expect("Wrong json format")
     }
 
     #[allow(dead_code)]
@@ -64,15 +64,15 @@ impl Artifact{
         let host = env::var("API_HOST").unwrap();
         let port = env::var("API_PORT").unwrap();
         let url = format!("http://{}:{}/api/artifacts/search/{}", host, port, artifact);
-        let url = Url::parse(&*url).expect("Can't convert url");
-        return reqwest::get(url).await.expect("Can't access Url").json::<Vec<Artifact>>().await.expect("Wrong json format");
+        let url = Url::parse(&url).expect("Can't convert url");
+        reqwest::get(url).await.expect("Can't access Url").json::<Vec<Artifact>>().await.expect("Wrong json format")
     }
 
     #[allow(dead_code)]
     pub async fn to_embed(&self) -> CreateEmbed {
         let mut embed = CreateEmbed::default();
 
-        embed.title(format!("{} | {}", self.name, ":star:".repeat(self.rarity.get(0).expect("").to_owned() as usize)));
+        embed.title(format!("{} | {}", self.name, ":star:".repeat(self.rarity.first().expect("").to_owned() as usize)));
 
         embed.thumbnail(format!("https://raw.githubusercontent.com/MadeBaruna/paimon-moe/main/static/images/artifacts/{}_circlet.png", self.id));
 
@@ -83,15 +83,12 @@ impl Artifact{
             );
         }
 
-        match &self.domain {
-            Some(d) => {
-                let domain = Domain::get(d).await;
-                embed.field("Domain", domain.name(), true);
-            }
-            _ => {}
+        if let Some(d) = &self.domain {
+            let domain = Domain::get(d).await;
+            embed.field("Domain", domain.name(), true);
         }
 
-        return embed;
+        embed
     }
 
     #[allow(dead_code)]

@@ -1,4 +1,3 @@
-use std::borrow::Borrow;
 use std::time::Duration;
 use rand::Rng;
 use serenity::{
@@ -7,10 +6,10 @@ use serenity::{
     }
 };
 use serenity::builder::CreateEmbed;
+use serenity::model::application::interaction::MessageFlags;
 use serenity::model::id::{ChannelId, MessageId};
+use serenity::model::application::interaction::application_command::ApplicationCommandInteraction;
 
-use serenity::model::interactions::application_command::ApplicationCommandInteraction;
-use serenity::model::interactions::InteractionApplicationCommandCallbackDataFlags;
 use serenity::model::prelude::{InteractionResponseType};
 use serenity::utils::Colour;
 use crate::interactions::data::events::Event;
@@ -18,18 +17,18 @@ use crate::utils::mongo::{add_discord_status_message, get_all_status_messages, g
 
 
 pub async fn update_status_message(ctx: Context) {
-    let forever = tokio::task::spawn(async move {
+    tokio::task::spawn(async move {
         let mut interval = tokio::time::interval(Duration::from_secs(60*60));
         loop {
             let mut x = get_all_status_messages().await;
             x.reverse();
             let embeds = create_status_embed().await;
             for sm in x {
-                let embeds : Vec<CreateEmbed> = (&embeds).clone();
-                let ctx = ctx.borrow().clone();
+                let embeds : Vec<CreateEmbed> = embeds.clone();
+                let ctx = ctx.clone();
                 tokio::spawn( async move {
                     if sm.channel_id == 0 { return }
-                    let msg = ChannelId::from(sm.channel_id as u64).message(ctx.borrow().clone().http, sm.message_id as u64).await;
+                    let msg = ChannelId::from(sm.channel_id as u64).message(ctx.clone().http, sm.message_id as u64).await;
                     match msg {
                         Ok(mut m) => {
                             match m.edit(&ctx.http, |f| {
@@ -49,7 +48,6 @@ pub async fn update_status_message(ctx: Context) {
             interval.tick().await;
         }
     });
-    forever.await.expect("Stopped for some reasons");
 }
 
 #[allow(dead_code)]
@@ -58,10 +56,10 @@ pub async fn create_status_interaction(ctx: Context, command: ApplicationCommand
     if !altcommand.member.unwrap().permissions.expect("No permissions").manage_messages() {
         command.create_interaction_response(&ctx.http, |f| {
             f.kind(InteractionResponseType::ChannelMessageWithSource).interaction_response_data(|r| {
-                r.create_embed(|e| {
+                r.embed(|e| {
                     e.title("Command Unsuccessful").description("You do not have the right to manage messages.")
                         .color(Colour::from(0xff0000))
-                }).flags(InteractionApplicationCommandCallbackDataFlags::EPHEMERAL)
+                }).flags(MessageFlags::EPHEMERAL)
             })
         }).await.expect("Interaction didn't work");
         return;
@@ -73,19 +71,16 @@ pub async fn create_status_interaction(ctx: Context, command: ApplicationCommand
     let channel_id = channel_option.keys().next().expect("No options passed");
 
     let message = get_discord_status_message(&command.guild_id.expect("Not in guild").as_u64().to_owned()).await;
-    match message {
-        Some(e) => {
-            let rm = ChannelId::from(e.channel_id as u64)
-                .message(&ctx.http, MessageId::from(e.message_id as u64))
-                .await;
-            match rm {
-                msg if rm.is_ok() => {
-                    msg.unwrap().delete(&ctx.http).await.unwrap();
-                }
-                _ => {}
+    if let Some(e) = message {
+        let rm = ChannelId::from(e.channel_id as u64)
+            .message(&ctx.http, MessageId::from(e.message_id as u64))
+            .await;
+        match rm {
+            msg if rm.is_ok() => {
+                msg.unwrap().delete(&ctx.http).await.unwrap();
             }
+            _ => {}
         }
-        _ => {}
     };
 
     let msg = channel_id.send_message(&ctx.http, |f| {
@@ -104,12 +99,12 @@ pub async fn create_status_interaction(ctx: Context, command: ApplicationCommand
     command.create_interaction_response(&ctx.http, |r| {
         r.kind(InteractionResponseType::ChannelMessageWithSource)
             .interaction_response_data(|d| {
-                d.create_embed(|e| {
+                d.embed(|e| {
                     e.title("Command Successful !");
                     e.color(Colour::new(0x00ff00));
-                    e.description(format!("Status message created !"))
+                    e.description("Status message created !".to_string())
                 })
-                    .flags(InteractionApplicationCommandCallbackDataFlags::EPHEMERAL)
+                    .flags(MessageFlags::EPHEMERAL)
             })
     }).await.unwrap();
 }
@@ -120,7 +115,7 @@ async fn create_status_embed() -> Vec<CreateEmbed> {
     let mut current = Event::get_current().await;
     let mut others = current.clone();
 
-    let mut question_marks = format!("");
+    let mut question_marks = String::new();
 
     let mut upcoming = Event::get_upcoming().await;
 
@@ -137,17 +132,11 @@ async fn create_status_embed() -> Vec<CreateEmbed> {
         embed.title(e.name);
         embed.color(Colour::new(rand::thread_rng().gen_range(0x000000..0xffffff)));
 
-        match &e.image {
-            Some(url) => {
-                embed.image(format!("https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/events/{}", url));
-            }
-            _ => {}
+        if let Some(url) = &e.image {
+            embed.image(format!("https://raw.githubusercontent.com/MadeBaruna/paimon-moe/main/static/images/events/{}", url.replace(' ', "%20")));
         };
 
-        match e.url {
-            Some(t) => { embed.url(format!("{}{}", t, question_marks)); }
-            _ => {}
-        };
+        if let Some(t) = e.url { embed.url(format!("{}{}", t, question_marks)); };
 
         embed.description(format!("Ends : <t:{}:R>", e.end_timestamp.expect("No End Timestamp")));
         embeds.push(embed);
@@ -164,28 +153,19 @@ async fn create_status_embed() -> Vec<CreateEmbed> {
     }
     embeds.push(other_embed);
 
-    match upcoming_event {
-        Some(e) => {
-            let mut upcoming_embed = CreateEmbed::default();
-            question_marks = format!("{}?", question_marks);
-            upcoming_embed.title(&e.name);
-            upcoming_embed.description(format!("Starts : <t:{}:R>", e.start_timestamp.expect("No Start Timestamp")));
-            upcoming_embed.color(Colour::new(rand::thread_rng().gen_range(0x000000..0xffffff)));
+    if let Some(e) = upcoming_event {
+        let mut upcoming_embed = CreateEmbed::default();
+        question_marks = format!("{}?", question_marks);
+        upcoming_embed.title(&e.name);
+        upcoming_embed.description(format!("Starts : <t:{}:R>", e.start_timestamp.expect("No Start Timestamp")));
+        upcoming_embed.color(Colour::new(rand::thread_rng().gen_range(0x000000..0xffffff)));
 
-            match &e.image {
-                Some(url) => {
-                    upcoming_embed.image(format!("https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/events/{}", url));
-                }
-                _ => {}
-            };
+        if let Some(url) = &e.image {
+            upcoming_embed.image(format!("https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/events/{}", url));
+        };
 
-            match &e.url {
-                Some(url) => { upcoming_embed.url(format!("{}{}", url, question_marks)); }
-                _ => {}
-            };
-            embeds.push(upcoming_embed);
-        }
-        _ => {}
+        if let Some(url) = &e.url { upcoming_embed.url(format!("{}{}", url, question_marks)); };
+        embeds.push(upcoming_embed);
     };
 
     embeds

@@ -1,15 +1,21 @@
-FROM rust:1.65.0
+FROM rust:slim-bookworm AS base
+RUN apt-get update
+RUN apt-get install libssl-dev pkg-config -y
+RUN cargo install cargo-chef
+WORKDIR app
 
-WORKDIR /app
+FROM base AS planner
+COPY . .
+RUN cargo chef prepare --recipe-path recipe.json
 
-COPY . /app
+FROM base AS builder
+COPY --from=planner /app/recipe.json recipe.json
+RUN cargo chef cook --release --recipe-path recipe.json
+COPY . .
+RUN cargo build --release --bin drunk-venti-rust
 
-RUN cargo install --path .
-
-#ENV DISCORD_TOKEN=token
-#ENV MONGO_HOST=host
-#ENV MONGO_PORT=port
-#ENV API_HOST=host
-#ENV API_PORT=port
-
-ENTRYPOINT ["drunk-venti-rust"]
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install ca-certificates libssl3 -y && apt-get clean autoclean && apt-get autoremove --yes && rm -rf /var/lib/{apt,dpkg,cache,log}/
+WORKDIR /root/
+COPY --from=builder /app/target/release/drunk-venti-rust .
+CMD ["./drunk-venti-rust"]

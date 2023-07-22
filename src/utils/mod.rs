@@ -1,6 +1,6 @@
 use linked_hash_map::LinkedHashMap;
 use serenity::builder::{CreateActionRow, CreateButton};
-use serenity::model::interactions::message_component::ButtonStyle;
+use serenity::model::application::component::ButtonStyle;
 
 pub mod mongo;
 

@@ -42,7 +42,7 @@ pub async fn get_discord_status_message(gid: &u64) -> Option<StatusMessage> {
     match infos {
         Some(i) => {
             let m_infos: StatusMessage = from_bson(Bson::Document(i)).expect("Can't get");
-            return Some(m_infos);
+            Some(m_infos)
         }
         _ => None
     }
@@ -55,7 +55,7 @@ pub async fn get_all_status_messages() -> Vec<StatusMessage> {
     let collection: Collection<StatusMessage> = client.database("drunk_venti").collection::<StatusMessage>("StatusMessages");
     let documents = collection.find(None, None).await.expect("Can't get everything");
     let all_docs: Vec<StatusMessage> = documents.try_collect().await.unwrap_or_else(|_| vec![]);
-    return all_docs;
+    all_docs
 }
 
 #[allow(dead_code)]
