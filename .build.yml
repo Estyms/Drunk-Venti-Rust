@@ -2,7 +2,7 @@ arch: null
 artifacts: []
 environment:
   BUILD_SUBMITTER: git.sr.ht
-image: alpine/3.16
+image: alpine/3.18
 packages:
 - rust
 - cargo
