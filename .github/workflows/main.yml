@@ -53,6 +53,6 @@ jobs:
       - name: Deploy to production
         uses: fjogeleit/http-request-action@v1.14.1
         with:
-          url: ${{ format('{0}?BOT-TAG={1}',env.PORTAINER_API_WEBHOOK, env.VERSION) }}
+          url: ${{ format('{0}?BOT_TAG={1}',env.PORTAINER_API_WEBHOOK, env.VERSION) }}
           method: 'POST'
           preventFailureOnNoResponse: true
