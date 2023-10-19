@@ -395,9 +395,13 @@ async fn note_embed(role: &Role, character: Character) -> CreateEmbed {
         }
     };
 
-    let n = &role.tip;
+    let a = role.tip.as_ref();
     {
-        let x = n.split('\n');
+        let y = match a {
+            None => { String::from("")}
+            Some(b) => { b.to_string() }
+        };
+        let x = y.split('\n');
         let mut first = true;
         let mut add_before = "";
         for tip_paragraph in x.collect::<Vec<&str>>() {

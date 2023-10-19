@@ -135,7 +135,7 @@ impl EventHandler for Handler {
 }
 
 fn test_environment() {
-    env::var("DISCORD_TOKEN").expect("DISCORD_TOKEN needed");
+    env::var("TOKEN").expect("TOKEN needed");
     env::var("MONGO_HOST").expect("MONGO_HOST needed");
     env::var("MONGO_PORT").expect("MONGO_PORT needed");
     env::var("API_HOST").expect("API_HOST needed");
@@ -146,7 +146,7 @@ fn test_environment() {
 async fn main() {
     dotenv().ok();
     test_environment();
-    let token= env::var("DISCORD_TOKEN").unwrap();
+    let token= env::var("TOKEN").unwrap();
     let application_id: u64 = "860553396578811914".parse().expect("Wrong format");
 
     let needed_intents = [

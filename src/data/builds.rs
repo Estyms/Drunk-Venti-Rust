@@ -26,7 +26,7 @@ pub struct Role{
     pub main_stats: RoleStat,
     pub sub_stats: Vec<Box<str>>,
     pub talent: Vec<Box<str>>,
-    pub tip: Box<str>,
+    pub tip: Option<String>,
     pub note: Box<str>,
     pub name: Box<str>,
 }

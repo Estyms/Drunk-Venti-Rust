@@ -161,7 +161,7 @@ async fn create_status_embed() -> Vec<CreateEmbed> {
         upcoming_embed.color(Colour::new(rand::thread_rng().gen_range(0x000000..0xffffff)));
 
         if let Some(url) = &e.image {
-            upcoming_embed.image(format!("https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/events/{}", url));
+            upcoming_embed.image(format!("https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/events/{}", url.replace(' ', "%20")));
         };
 
         if let Some(url) = &e.url { upcoming_embed.url(format!("{}{}", url, question_marks)); };
