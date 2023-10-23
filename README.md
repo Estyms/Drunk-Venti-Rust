@@ -1,8 +1,8 @@
+![Build Status](https://github.com/Estyms/Drunk-Venti-Rust/actions/workflows/main.yml/badge.svg)
 # Drunk-Venti-Rust
 
 A discord bot that provides Genshin Impact data to users
 
-[![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Estyms/Drunk-Venti-Rust/Rust?label=github)](https://github.com/Estyms/Drunk-Venti-Rust)
 
 
 ## Features
@@ -21,6 +21,6 @@ In that message you can see what events are currently going on as well as the ne
 
 
 ## APIs
-- [Serenity](https://github.com/serenity-rs/serenity) ![GitHub Workflow Status](https://img.shields.io/github/workflow/status/serenity-rs/serenity/CI?label=github)
+- [Serenity](https://github.com/serenity-rs/serenity) 
 - [Paimon.moe](https://paimon.moe/) by [@MadeBaruna](https://github.com/MadeBaruna)
 - Drunk-Venti-Api - [[SourceHut](https://git.sr.ht/~estym/Drunk-Venti-Api)] [[Github](https://github.com/Estyms/Drunk-Venti-Api)]
