@@ -2,7 +2,6 @@
 
 A discord bot that provides Genshin Impact data to users
 
-[![builds.sr.ht status](https://builds.sr.ht/~estym/Drunk-Venti.svg)](https://sr.ht/~estym/Drunk-Venti?)
 [![GitHub Workflow Status](https://img.shields.io/github/workflow/status/Estyms/Drunk-Venti-Rust/Rust?label=github)](https://github.com/Estyms/Drunk-Venti-Rust)
 
 
