@@ -196,40 +196,7 @@ pub async fn home_embed(role: &Role, character: Character) -> CreateEmbed {
 
     match role.artifacts.get(0) {
         Some(a) => {
-            let mut artifact_string: Vec<String> = vec![];
-            let str;
-            match a.len() {
-                1 => {
-                    let artifact_name = match a.get(0).expect("").to_string().as_str() {
-                        "+18%_atk_set" => "+18% Atk Set".to_string(),
-                        t => Artifact::get(t).await.name.to_string(),
-                    };
-
-                    str = format!("(4) {}", artifact_name);
-                }
-                2 => {
-                    for art in a {
-                        let artifact_name = match art.to_string().as_str() {
-                            "+18%_atk_set" => "+18% Atk Set".to_string(),
-                            t => Artifact::get(t).await.name.to_string(),
-                        };
-                        artifact_string.push(format!("(2) {}", artifact_name));
-                    }
-                    str = artifact_string.join(" & ");
-                }
-                _ => {
-                    artifact_string.push("Choose 2 sets :".to_string());
-                    for art in a {
-                        let artifact_name = match art.to_string().as_str() {
-                            "+18%_atk_set" => "+18% Atk Set".to_string(),
-                            t => Artifact::get(t).await.name.to_string(),
-                        };
-                        artifact_string.push(format!("(2) {}", artifact_name));
-                    }
-                    str = artifact_string.join(", ")
-                }
-            }
-            embed.field("Best Artifacts", str, false);
+            embed.field("Best Artifacts", get_artifact_string(a).await, false);
         }
         _ => { embed.field("Best Artifacts", "TBD", false); }
     }
@@ -266,41 +233,7 @@ async fn artifact_embed(role: &Role, character: Character) -> CreateEmbed {
     for i in 0..role.artifacts.len() {
         match role.artifacts.get(i) {
             Some(a) => {
-                let mut artifact_string: Vec<String> = vec![];
-                let str;
-                match a.len() {
-                    1 => {
-                        let artifact_name = match a.get(0).expect("").to_string().as_str() {
-                            "+18%_atk_set" => "+18% Atk Set".to_string(),
-                            t => Artifact::get(t).await.name.to_string(),
-                        };
-
-                        str = format!("(4) {}", artifact_name);
-                    }
-                    2 => {
-                        for art in a {
-                            let artifact_name = match art.to_string().as_str() {
-                                "+18%_atk_set" => "+18% Atk Set".to_string(),
-                                t => Artifact::get(t).await.name.to_string(),
-                            };
-                            artifact_string.push(format!("(2) {}", artifact_name));
-                        }
-                        str = artifact_string.join(" & ");
-                    }
-                    _ => {
-                        artifact_string.push("Choose 2 sets :".to_string());
-                        for art in a {
-                            let artifact_name = match art.to_string().as_str() {
-                                "+18%_atk_set" => "+18% Atk Set".to_string(),
-                                "+80_em" => "Elemental Mastery +80 Set".to_string(),
-                                t => Artifact::get(t).await.name.to_string(),
-                            };
-                            artifact_string.push(format!("(2) {}", artifact_name));
-                        }
-                        str = artifact_string.join(", ")
-                    }
-                }
-                all_artefacts_string.push(format!("- {}", str));
+                all_artefacts_string.push(format!("- {}", get_artifact_string(a).await));
             }
             _ => { all_artefacts_string.push("- TBD".to_string()); }
         }
@@ -324,6 +257,30 @@ async fn artifact_embed(role: &Role, character: Character) -> CreateEmbed {
     });
 
     embed
+}
+
+async fn get_artifact_string(artifacts: &Vec<Box<str>>) -> String {
+    let mut artifact_string: Vec<String> = vec![];
+    let x = artifacts.len();
+    for art in artifacts {
+        let artifact_name = match art.to_string().as_str() {
+            "+18%_atk_set" => "+18% Atk Set".to_string(),
+            "+20%_hp_set" => "+20% Hp Set".to_string(),
+            "+80_em" => "Elemental Mastery +80 Set".to_string(),
+            t => Artifact::get(t).await.name.to_string(),
+        };
+        artifact_string.push(format!("({}) {}", match x {
+            1 => 4,
+            _ => 2
+        }, artifact_name));
+    }
+
+    artifact_string.join(
+        match x {
+            1 | 2 => " & ",
+            _ => ", "
+        }
+    )
 }
 
 async fn weapons_embed(role: &Role, character: Character) -> CreateEmbed {
@@ -372,7 +329,7 @@ async fn note_embed(role: &Role, character: Character) -> CreateEmbed {
     embed.thumbnail(format!("https://github.com/MadeBaruna/paimon-moe/raw/main/static/images/characters/{}.png", character.id));
     embed.color(character.element.color);
 
-    let n = &role.note;
+    let n = &role.note.replace("<b>", "").replace("</b>", "");
     {
         let x = n.split('\n');
         let mut first = true;
@@ -399,7 +356,7 @@ async fn note_embed(role: &Role, character: Character) -> CreateEmbed {
     {
         let y = match a {
             None => { String::from("")}
-            Some(b) => { b.to_string() }
+            Some(b) => { b.to_string().replace("<b>", "").replace("</b>", "") }
         };
         let x = y.split('\n');
         let mut first = true;

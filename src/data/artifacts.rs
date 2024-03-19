@@ -32,6 +32,7 @@ pub fn get_real_artifact_name(artifact: &str) -> &str {
         "+25%_physical_dmg" => "bloodstained_chivalry",
         "+80_em" => "gilded_dreams",
         "+15%_healing_bonus_set" => "ocean-hued_clam",
+        "+20%_hp_set" => "vourukashas_glow",
         _ => artifact
     }
 }
